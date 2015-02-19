@@ -165,12 +165,12 @@ function GetRaiderItemLevel( raider_id ) {
 	return total;
 }
 
-var g_saved_raid;
+var g_saved_raid = [];
 
-function SaveRaid() {
-	g_saved_raid = JSON.stringify( g_raiders );
+function PushRaid() {
+	g_saved_raid.push( JSON.stringify( g_raiders ) );
 }
 
-function LoadRaid() {
-	g_raiders = JSON.parse( g_saved_raid );
+function PopRaid() {
+	g_raiders = JSON.parse( g_saved_raid.pop() );
 }
