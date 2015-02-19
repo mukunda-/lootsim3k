@@ -111,7 +111,7 @@ $(function () {
 		used0.push( Math.round(g_sim_data[i].used[0] / 7  * 100*10)/10 );
 		used1.push( Math.round(g_sim_data[i].used[1] / 7  * 100*10)/10 );
 	}
-	PlotResult( "Upgrade Chance for a PUG with Lower Item Level", "Player ilvl / Raid ilvl", "#result-ml", categories, used0, used1 );
+	PlotResult( "Upgrade Chance for a PUG with Low Item Level", "Player ilvl / Raid ilvl", "#result-ml", categories, used0, used1 );
 	
 	
 	/*
@@ -213,7 +213,7 @@ function RunSim2() {
 	PushRaid();
 	for( var iter = 0; iter < iterations; iter++ ) {
 		PushRaid();
-		while( GetRaidItemLevel() < 650 ) {
+		while( GetRaidItemLevel() < 652 ) {
 			ClearHighmaul( "personal" );
 			result_pl++;
 		}
@@ -223,7 +223,7 @@ function RunSim2() {
 	
 	for( var iter = 0; iter < iterations; iter++ ) {
 		PushRaid();
-		while( GetRaidItemLevel() < 650 ) {
+		while( GetRaidItemLevel() < 652 ) {
 			ClearHighmaul( "master" );
 			result_ml++;
 		}
@@ -232,8 +232,8 @@ function RunSim2() {
 	
 	result_ml /= iterations;
 	
-	Log2( "Weeks needed to get 650 gear using Personal Loot: " + result_pl );
-	Log2( "Weeks needed to get 650 gear using Master Looter: " + result_ml );
+	Log2( "Weeks needed to get 654 gear using Personal Loot: " + result_pl );
+	Log2( "Weeks needed to get 654 gear using Master Looter: " + result_ml );
 }
 
 function RunSim3() {
@@ -246,7 +246,7 @@ function RunSim3() {
 	var t_drops = [0,0], t_used = [0,0], t_wasted = [0,0];
 	g_sim_data = [];
 	
-	var pug = CreateRaider( "Pug", "Rogue" ); 
+	var pug = CreateRaider( "Pug", "2H BM Monk" ); 
 	
 	var iterations = 100;
 	
