@@ -37,7 +37,7 @@ var g_sim_data = [];
 var g_debug;
 
 
-function PlotResult( label, target, cats, used0, used1 ) {
+function PlotResult( label, xaxis, target, cats, used0, used1 ) {
 	$(target).highcharts({
 		chart: {
 			type: "column"
@@ -48,7 +48,7 @@ function PlotResult( label, target, cats, used0, used1 ) {
 		xAxis: {
 			categories: cats,
 			title: {
-				text: 'Average ilvl of raid'
+				text: xaxis
 			}
 		},
 		yAxis: {
@@ -95,9 +95,25 @@ $(function () {
 		used1.push( Math.round(g_sim_data[i].used[1] / 7 / GetRaidCount() * 100*10)/10 );
 	}
 	
-	PlotResult( "Upgrade Chance Per Player", "#result-pl", categories, used0, used1 );
+	PlotResult( "Upgrade Chance Per Player", 'Average ilvl of raid', "#result-pl", categories, used0, used1 );
 	
 	RunSim2();
+	
+	RunSim3();
+	categories = [];
+	used0 = [];
+	used1 = [];
+	for( var i = 0; i < g_sim_data.length; i++ ) {
+		categories.push( g_sim_data[i].ilvl );
+	}
+	
+	for( var i = 0; i < g_sim_data.length; i++ ) {
+		used0.push( Math.round(g_sim_data[i].used[0] / 7  * 100*10)/10 );
+		used1.push( Math.round(g_sim_data[i].used[1] / 7  * 100*10)/10 );
+	}
+	PlotResult( "Upgrade Chance for a PUG with Lower Item Level", "Player ilvl / Raid ilvl", "#result-ml", categories, used0, used1 );
+	
+	
 	/*
 	PopRaid();
 	PushRaid();
@@ -193,7 +209,7 @@ function RunSim2() {
 	
 	var result_pl=0, result_ml=0;
 	
-	var iterations = 300;
+	var iterations = 100;
 	PushRaid();
 	for( var iter = 0; iter < iterations; iter++ ) {
 		PushRaid();
@@ -218,6 +234,61 @@ function RunSim2() {
 	
 	Log2( "Weeks needed to get 650 gear using Personal Loot: " + result_pl );
 	Log2( "Weeks needed to get 650 gear using Master Looter: " + result_ml );
+}
+
+function RunSim3() {
+	PushRaid();
+	for( var i = 0; i < 5; i++ ) {
+		ClearHighmaul( "master" );
+	}
+	LeaveRaid( "Llanna" );
+	
+	var t_drops = [0,0], t_used = [0,0], t_wasted = [0,0];
+	g_sim_data = [];
+	
+	var pug = CreateRaider( "Pug", "Rogue" ); 
+	
+	var iterations = 100;
+	
+	// 3 months of raiding.
+	for( var runs = 0; runs < 20; runs++ ) {
+	
+		for( var i = 0; i < iterations; i++ ) {
+			PushRaid(); 
+			ClearHighmaul( "personal" ); 
+			
+			t_drops[0] += g_raiders[pug].total_drops;
+			t_used[0] += g_raiders[pug].total_used;
+			t_wasted[0] += g_raiders[pug].total_wasted;
+			PopRaid();
+		}
+		
+		for( var i = 0; i < iterations; i++ ) {
+			PushRaid(); 
+			ClearHighmaul( "master" ); 
+			
+			t_drops[1] += g_raiders[pug].total_drops;
+			t_used[1] += g_raiders[pug].total_used;
+			t_wasted[1] += g_raiders[pug].total_wasted;
+			PopRaid();
+		}
+		LeaveRaid( "Pug" );
+		
+		g_sim_data.push({ 
+			ilvl: Math.round(GetRaiderItemLevel(pug)) + "/" + Math.round(GetRaidItemLevel()),
+			drops: [t_drops[0]/iterations, t_drops[1]/iterations],
+			used: [t_used[0]/iterations, t_used[1]/iterations],
+			wasted: [t_wasted[0]/iterations, t_wasted[1]/iterations]
+		});
+		t_drops = [0,0];
+		t_used = [0,0];
+		t_wasted = [0,0];
+		
+		
+		ClearHighmaul( "master" );
+		EnterRaid( "Pug" );
+	}
+	PopRaid();
 }
 
 //-----------------------------------------------------------------------------

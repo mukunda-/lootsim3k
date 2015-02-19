@@ -23,7 +23,7 @@ function CreateRaider( name, spec ) {
 		
 			g_raiders.push( new_raider );
 			
-			return;
+			return g_raiders.length-1;
 			
 		}
 	}
