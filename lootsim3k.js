@@ -107,7 +107,7 @@ $(function () {
 	var a = GetRaidItemLevel();
 
 	
-	RunSim();
+	//RunSim();
 	
 	var categories = [];
 	var used0 = [];
@@ -123,9 +123,9 @@ $(function () {
 	
 	PlotResult( "Upgrade Chance Per Player", 'Average ilvl of raid', "#result-pl", categories, used0, used1 );
 	
-	RunSim2();
+	//RunSim2();
 	
-	RunSim3();
+	//RunSim3();
 	
 	categories = [];
 	used0 = [];
@@ -151,11 +151,14 @@ $(function () {
 		categories.push( g_sim_data[i].ilvl );
 	}
 	for( var i = 0; i < g_sim_data.length; i++ ) {
-		used0.push( Math.round(g_sim_data[i].used[0] / 7 / GetRaidCount() * 100*10)/10 );
-		used1.push( Math.round(g_sim_data[i].used[1] / 7 / GetRaidCount() * 100*10)/10 );
+		//used0.push( Math.round(g_sim_data[i].used[0] / 7 / GetRaidCount() * 100*10)/10 );
+		//used1.push( Math.round(g_sim_data[i].used[1] / 7 / GetRaidCount() * 100*10)/10 );
+		used0.push( (g_sim_data[i].used[0] / 7 * 100*10)/10 );
+		used1.push( (g_sim_data[i].used[1] / 7 * 100*10)/10 );
+		console.log( used0[i] );
 	}
 	
-	PlotResult( "Upgrade Chances in a PUG", 'Average ilvl of raid', "#result-pl2", categories, used0, used1 );
+	PlotResult( "Upgrade Chances in a PUG", 'Player ilvl / Raid ilvl', "#result-pl2", categories, used0, used1 );
 	
 	
 	/*
@@ -365,13 +368,19 @@ function RunSim4() {
 	 "Ginger",      "Resto Druid"    ];
 	
 	
-	var starting_runs = 1;
-	var iterations = 100;
-	 
+	var starting_runs = 0;
+	var iterations = 50;
 	
-	for( var runs = 0; runs < 20; runs++ ) {
+	var selected = 5;
+	 
+	var dataset = {};
+	for( var i = 630; i <= 655; i++ ) {
+		dataset[i] = { total: [0,0], count: 0 };
+	}
+	
+	for( var runs = 0; runs < 5000; runs++ ) {
 		
-		my_raiders = [];
+		my_raiders = []; 
 		
 		// this creates a raid randomly geared in different runs, 
 		// we could also randomize classes
@@ -381,7 +390,7 @@ function RunSim4() {
 			g_raiders = [];
 			CreateRaider( list[i*2], list[i*2+1] );
 			
-			var startr = starting_runs + runs/3 + Math.round(Math.random()*4);
+			var startr = starting_runs + Math.round(Math.random()*7);
 			for( var j = 0; j < startr; j++ ) {
 				ClearHighmaul( "personal" );
 			}
@@ -390,41 +399,77 @@ function RunSim4() {
 			
 		}
 		g_raiders = my_raiders;
+		 
+		for( var i = 0; i < iterations; i++ ) {
+			PushRaid(); 
+			ClearHighmaul( "master" ); 
+			
+			if( selected ) {
+				t_drops[1]  += g_raiders[selected].total_drops;
+				t_used[1]   += g_raiders[selected].total_used;
+				t_wasted[1] += g_raiders[selected].total_wasted;
+			} else {
+				t_drops[0]  += g_total_drops;
+				t_used[0]   += g_total_used;
+				t_wasted[0] += g_total_wasted;
+			}
+			PopRaid();
+		}
+		
 		
 		for( var i = 0; i < iterations; i++ ) {
 			PushRaid(); 
 			ClearHighmaul( "personal" ); 
-			PopRaid();
 			
-			t_drops[0]  += g_total_drops;
-			t_used[0]   += g_total_used;
-			t_wasted[0] += g_total_wasted;
+			if( selected ) {
+				t_drops[0]  += g_raiders[selected].total_drops;
+				t_used[0]   += g_raiders[selected].total_used;
+				t_wasted[0] += g_raiders[selected].total_wasted;
+			} else {
+				t_drops[0]  += g_total_drops;
+				t_used[0]   += g_total_used;
+				t_wasted[0] += g_total_wasted;
+			}
+			PopRaid();
 		}
 		
-		for( var i = 0; i < iterations; i++ ) {
-			PushRaid(); 
-			ClearHighmaul( "master" ); 
-			PopRaid();
-			
-			t_drops[1]  += g_total_drops;
-			t_used[1]   += g_total_used;
-			t_wasted[1] += g_total_wasted;
-		}
-		
-		// record data
-		g_sim_data.push( { 
-			ilvl: Math.round(GetRaidItemLevel()), 
+		var ilvl = Math.round(GetRaidItemLevel());
+		if( ilvl < 630 || ilvl > 655 ) continue; // discard sample :(
+		dataset[ilvl].count++;
+		dataset[ilvl].total[0] += t_used[0]/iterations;
+		dataset[ilvl].total[1] += t_used[1]/iterations;
+		 
+		 // record data
+		/*g_sim_data.push( { 
+			ilvl: Math.round(GetRaiderItemLevel(4)) + "/" + Math.round(GetRaidItemLevel()), 
 			drops: [t_drops[0]/iterations, t_drops[1]/iterations], 
 			used: [t_used[0]/iterations, t_used[1]/iterations], 
 			wasted: [t_wasted[0]/iterations, t_wasted[1]/iterations]
-		});
+		});*/
 		
 		t_drops  = [0,0];
 		t_used   = [0,0];
 		t_wasted = [0,0];
 		
 	}
-	   
+
+	for( var i = 630; i <= 655; i++ ) {
+		// record data
+		
+		if( dataset[i].count == 0 ) {
+			// missing sample...
+			g_sim_data.push( { ilvl:i, used:[0,0] } );
+			continue;
+		}
+		
+		g_sim_data.push( { 
+			ilvl: i,
+			used: [ 
+				dataset[i].total[0] / dataset[i].count,
+				dataset[i].total[1] / dataset[i].count 
+				]
+		});
+	}
 	
 }
 
