@@ -7,26 +7,28 @@ var PERSONAL_LOOT_CHANCE = 0.2;
 // this is assumed to be 20% by many people, this assumption is
 // backed up by the fact of master looter being 20% per person
 
+
+/*
 CreateRaider( "Deeter",      "Prot Warrior"   );
 CreateRaider( "Stupes",      "SMF Warrior"    );
 CreateRaider( "Llanna",      "2H BM Monk"     );
 CreateRaider( "Myagi",       "1H WW Monk"     );
-CreateRaider( "Jim",         "Warlock"        );
+CreateRaider( "Stupes",      "SMF Warrior"    );
 CreateRaider( "Skwumpy",     "Mage"           );
 CreateRaider( "Penguirrel",  "Mage"           );
-CreateRaider( "Kaiser",      "Ret Paladin"    );
+CreateRaider( "Stupes",      "SMF Warrior"    );
 CreateRaider( "Cyriana",     "Ele Shaman"     );
 CreateRaider( "Demile",      "1H Unholy DK"   );
-CreateRaider( "Kaetan",      "Ret Paladin"    );
+CreateRaider( "Stupes",      "SMF Warrior"    );
 CreateRaider( "Detta",       "Rogue"          );
 CreateRaider( "Wintegra",    "Hunter"         );
-CreateRaider( "Joefalcon",   "Hunter"         );
+CreateRaider( "Stupes",      "SMF Warrior"    );
 CreateRaider( "Realbeastly", "Shadow Priest"  );
 CreateRaider( "Gimory",      "Holy Paladin"   );
 CreateRaider( "Atoneme",     "Healing Priest" );
 CreateRaider( "Tyler",       "Resto Shaman"   );
 CreateRaider( "Maxxie",      "Resto Druid"    );
-CreateRaider( "Ginger",      "Resto Druid"    );
+CreateRaider( "Ginger",      "Resto Druid"    );*/
 
 var g_total_drops;
 var g_total_used;
@@ -74,6 +76,30 @@ function PlotResult( label, xaxis, target, cats, used0, used1 ) {
 }
  
 $(function () {
+
+	PushRaid();
+
+	CreateRaider( "Deeter",      "Prot Warrior"   );
+	CreateRaider( "Stupes",      "SMF Warrior"    );
+	CreateRaider( "Llanna",      "2H BM Monk"     );
+	CreateRaider( "Myagi",       "1H WW Monk"     );
+	CreateRaider( "Jim",         "Warlock"        );
+	CreateRaider( "Skwumpy",     "Mage"           );
+	CreateRaider( "Penguirrel",  "Mage"           );
+	CreateRaider( "Kaiser",      "Ret Paladin"    );
+	CreateRaider( "Cyriana",     "Ele Shaman"     );
+	CreateRaider( "Demile",      "1H Unholy DK"   );
+	CreateRaider( "Kaetan",      "Ret Paladin"    );
+	CreateRaider( "Detta",       "Rogue"          );
+	CreateRaider( "Wintegra",    "Hunter"         );
+	CreateRaider( "Joefalcon",   "Hunter"         );
+	CreateRaider( "Realbeastly", "Shadow Priest"  );
+	CreateRaider( "Gimory",      "Holy Paladin"   );
+	CreateRaider( "Atoneme",     "Healing Priest" );
+	CreateRaider( "Tyler",       "Resto Shaman"   );
+	CreateRaider( "Maxxie",      "Resto Druid"    );
+	CreateRaider( "Ginger",      "Resto Druid"    );
+
 	for( var i = 0; i < 30; i++ ) {
 	//	ClearHighmaul( "master" );
 	}
@@ -100,6 +126,7 @@ $(function () {
 	RunSim2();
 	
 	RunSim3();
+	
 	categories = [];
 	used0 = [];
 	used1 = [];
@@ -112,6 +139,23 @@ $(function () {
 		used1.push( Math.round(g_sim_data[i].used[1] / 7  * 100*10)/10 );
 	}
 	PlotResult( "Upgrade Chance for a PUG with Low Item Level", "Player ilvl / Raid ilvl", "#result-ml", categories, used0, used1 );
+	
+	PopRaid();
+	
+	RunSim4();
+
+	categories = [];
+	used0 = [];
+	used1 = [];
+	for( var i = 0; i < g_sim_data.length; i++ ) {
+		categories.push( g_sim_data[i].ilvl );
+	}
+	for( var i = 0; i < g_sim_data.length; i++ ) {
+		used0.push( Math.round(g_sim_data[i].used[0] / 7 / GetRaidCount() * 100*10)/10 );
+		used1.push( Math.round(g_sim_data[i].used[1] / 7 / GetRaidCount() * 100*10)/10 );
+	}
+	
+	PlotResult( "Upgrade Chances in a PUG", 'Average ilvl of raid', "#result-pl2", categories, used0, used1 );
 	
 	
 	/*
@@ -241,12 +285,14 @@ function RunSim3() {
 	for( var i = 0; i < 5; i++ ) {
 		ClearHighmaul( "master" );
 	}
-	LeaveRaid( "Llanna" );
+	//LeaveRaid( "Llanna" );
+	LeaveRaid( "Detta" );
 	
 	var t_drops = [0,0], t_used = [0,0], t_wasted = [0,0];
 	g_sim_data = [];
 	
-	var pug = CreateRaider( "Pug", "2H BM Monk" ); 
+	var pug = CreateRaider( "Pug", "Rogue" ); 
+	//var pug = CreateRaider( "Pug", "SMF Warrior" ); 
 	
 	var iterations = 100;
 	
@@ -289,6 +335,97 @@ function RunSim3() {
 		EnterRaid( "Pug" );
 	}
 	PopRaid();
+}
+
+function RunSim4() {
+
+	var t_drops = [0,0], t_used = [0,0], t_wasted = [0,0];
+	g_sim_data = [];
+	
+	var list = [ 
+	 "Deeter",      "Prot Warrior" ,
+	 "Stupes",      "SMF Warrior"   , 
+	 "Llanna",      "2H BM Monk"     ,
+	 "Myagi",       "1H WW Monk"     ,
+	 "Jim",         "Warlock"        ,
+	 "Skwumpy",     "Mage"           ,
+	 "Penguirrel",  "Mage"           ,
+	 "Kaiser",      "Ret Paladin"    ,
+	 "Cyriana",     "Ele Shaman"     ,
+	 "Demile",      "1H Unholy DK"  ,
+	 "Kaetan",      "Ret Paladin"   ,
+	 "Detta",       "Rogue"          ,
+	 "Wintegra",    "Hunter"         ,
+	 "Joefalcon",   "Hunter"         ,
+	 "Realbeastly", "Shadow Priest"  ,
+	 "Gimory",      "Holy Paladin"   ,
+	 "Atoneme",     "Healing Priest" ,
+	 "Tyler",       "Resto Shaman"  ,
+	 "Maxxie",      "Resto Druid"    ,
+	 "Ginger",      "Resto Druid"    ];
+	
+	
+	var starting_runs = 1;
+	var iterations = 100;
+	 
+	
+	for( var runs = 0; runs < 20; runs++ ) {
+		
+		my_raiders = [];
+		
+		// this creates a raid randomly geared in different runs, 
+		// we could also randomize classes
+		// so the forumdwellers dont have something to argue about but i 
+		// dont care.
+		for( var i = 0; i < list.length/2; i++ ) {
+			g_raiders = [];
+			CreateRaider( list[i*2], list[i*2+1] );
+			
+			var startr = starting_runs + runs/3 + Math.round(Math.random()*4);
+			for( var j = 0; j < startr; j++ ) {
+				ClearHighmaul( "personal" );
+			}
+			
+			my_raiders.push( g_raiders[0] );
+			
+		}
+		g_raiders = my_raiders;
+		
+		for( var i = 0; i < iterations; i++ ) {
+			PushRaid(); 
+			ClearHighmaul( "personal" ); 
+			PopRaid();
+			
+			t_drops[0]  += g_total_drops;
+			t_used[0]   += g_total_used;
+			t_wasted[0] += g_total_wasted;
+		}
+		
+		for( var i = 0; i < iterations; i++ ) {
+			PushRaid(); 
+			ClearHighmaul( "master" ); 
+			PopRaid();
+			
+			t_drops[1]  += g_total_drops;
+			t_used[1]   += g_total_used;
+			t_wasted[1] += g_total_wasted;
+		}
+		
+		// record data
+		g_sim_data.push( { 
+			ilvl: Math.round(GetRaidItemLevel()), 
+			drops: [t_drops[0]/iterations, t_drops[1]/iterations], 
+			used: [t_used[0]/iterations, t_used[1]/iterations], 
+			wasted: [t_wasted[0]/iterations, t_wasted[1]/iterations]
+		});
+		
+		t_drops  = [0,0];
+		t_used   = [0,0];
+		t_wasted = [0,0];
+		
+	}
+	   
+	
 }
 
 //-----------------------------------------------------------------------------
